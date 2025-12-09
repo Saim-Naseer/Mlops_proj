@@ -1,0 +1,44 @@
+stages:
+  # optional - only if you use a script to download via kaggle CLI
+  download:
+    cmd: python src/download_data.py
+    deps:
+      - src/download_data.py
+    outs:
+      - data/raw/Admission_Predict.csv
+
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+      - src/preprocess.py
+      - params.yaml
+      - data/raw/Admission_Predict.csv
+    outs:
+      - data/processed/train.csv
+      - data/processed/val.csv
+    params:
+      - train.test_size
+      - train.random_seed
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - params.yaml
+      - data/processed/train.csv
+    outs:
+      - models/model.pkl
+    params:
+      - train.n_estimators
+      - train.max_depth
+      - train.threshold
+      - train.random_seed
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - models/model.pkl
+      - data/processed/val.csv
+    metrics:
+      - metrics/metrics.json

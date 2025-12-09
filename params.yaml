@@ -1,0 +1,21 @@
+# params.yaml
+data:
+  raw_path: data/raw/Admission_Predict.csv
+  processed_dir: data/processed
+
+train:
+  target_col: chance_of_admit
+  test_size: 0.2
+  random_seed: 42
+  # model hyperparams
+  n_estimators: 100
+  max_depth: 6
+  threshold: 0.5 # if you want to turn regression -> binary classification at this threshold
+
+mlflow:
+  tracking_uri: http://localhost:5000
+  experiment_name: admission_experiment
+
+paths:
+  model_out: models/model.pkl
+  metrics_out: metrics/metrics.json
