@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/357436110151255850/models/m-b5255a169c1e42c389541b10c5329712/artifacts
+creation_timestamp: 1765384700390
+experiment_id: '357436110151255850'
+last_updated_timestamp: 1765384704585
+model_id: m-b5255a169c1e42c389541b10c5329712
+model_type: ''
+name: ridge_model
+source_run_id: d608a68c0ae04e80a9fee20355d54d9c
+status: 2
+status_message: null

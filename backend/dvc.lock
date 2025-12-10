@@ -1,0 +1,87 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py --out_dir data --orig_data Admission_Predict.csv
+    deps:
+    - path: data/Admission_Predict.csv
+      hash: md5
+      md5: 0e02299c532bf81512a3015daaa6a8f0
+      size: 12502
+    - path: src/prepare.py
+      hash: md5
+      md5: 2ea865b825b6e798b0f55503dd1063eb
+      size: 1294
+    outs:
+    - path: data/Fast_Admission_Predict.csv
+      hash: md5
+      md5: 1ad824f5456e0acc2abf881a9bd1363f
+      size: 17339
+  preprocess:
+    cmd: python src/preprocess.py --out_dir models --input 
+      data/Admission_Predict.csv --output data/processed.csv
+    deps:
+    - path: data/Admission_Predict.csv
+      hash: md5
+      md5: 99700d58c8a5593e1e73637350f9c716
+      size: 12501
+    - path: params.yml
+      hash: md5
+      md5: c888f8d18c70e02fea0b35ed8330b8cb
+      size: 323
+    - path: src/preprocess.py
+      hash: md5
+      md5: 87abe40f7f8dad537fb61d4409590f73
+      size: 1580
+    outs:
+    - path: data/processed.csv
+      hash: md5
+      md5: 9c60aea99cd218cb541f1cfa67c73bf6
+      size: 56410
+    - path: models/scaling_model.pkl
+      hash: md5
+      md5: e8ae97bf8c0a71886161f877e3cc37ef
+      size: 781
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed.csv
+      hash: md5
+      md5: 9c60aea99cd218cb541f1cfa67c73bf6
+      size: 56410
+    - path: params.yml
+      hash: md5
+      md5: c888f8d18c70e02fea0b35ed8330b8cb
+      size: 323
+    - path: src/train.py
+      hash: md5
+      md5: ba911776f77421c2f6673f0909ca0367
+      size: 2445
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: 8f23d6cc372e8324ace5ae5bc7a69ea1
+      size: 669
+  evaluate:
+    cmd: python src/evaluate.py --out_dir metrics
+    deps:
+    - path: data/processed.csv
+      hash: md5
+      md5: 9c60aea99cd218cb541f1cfa67c73bf6
+      size: 56410
+    - path: models/model.pkl
+      hash: md5
+      md5: 8f23d6cc372e8324ace5ae5bc7a69ea1
+      size: 669
+    - path: params.yml
+      hash: md5
+      md5: c888f8d18c70e02fea0b35ed8330b8cb
+      size: 323
+    - path: src/evaluate.py
+      hash: md5
+      md5: 6683b5231353540883e3169a460eab9f
+      size: 1080
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: 4a61de165f8da6554b7582508abcffb0
+      size: 55

@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  mlflow-ui:
+    image: ghcr.io/mlflow/mlflow:latest
+    environment:
+      MLFLOW_BACKEND_STORE_URI: /mlflow/mlruns
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+    ports:
+      - "5000:5000"
+    command: mlflow server --backend-store-uri /mlflow/mlruns --default-artifact-root /mlflow/mlruns -p 5000 --host 0.0.0.0
+
+  mlflow-serve:
+    image: ghcr.io/mlflow/mlflow:latest
+    volumes:
+      - ./mlartifacts:/mlartifacts
+    ports:
+      - "1234:1234"
+    command: mlflow models serve -m "/mlartifacts/357436110151255850/models/m-b5255a169c1e42c389541b10c5329712/artifacts" -p 1234 --no-conda --host 0.0.0.0
+
+
+  backend:
+    build: ./backend
+    environment:
+      MLFLOW_URL: http://mlflow-serve:1234/invocations
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mlflow-ui
+      - mlflow-serve
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

@@ -1,0 +1,27 @@
+stages:
+  preprocess:
+    cmd: python src/preprocess.py --out_dir models --input data/Admission_Predict.csv --output data/processed.csv
+    deps:
+      - src/preprocess.py
+      - data/Admission_Predict.csv
+      - params.yml
+    outs:
+      - data/processed.csv
+      - models/scaling_model.pkl
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed.csv
+      - params.yml
+    outs:
+      - models/model.pkl
+  evaluate:
+    cmd: python src/evaluate.py --out_dir metrics
+    deps:
+      - src/evaluate.py
+      - models/model.pkl
+      - data/processed.csv
+      - params.yml
+    outs:
+      - metrics/metrics.json

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/357436110151255850/d608a68c0ae04e80a9fee20355d54d9c/artifacts
+end_time: 1765384704948
+entry_point_name: ''
+experiment_id: '357436110151255850'
+lifecycle_stage: active
+run_id: d608a68c0ae04e80a9fee20355d54d9c
+run_name: zealous-shrike-494
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1765384696631
+status: 3
+tags: []
+user_id: a3d14n
