@@ -1,27 +1,46 @@
-# src/evaluate.py
 import pandas as pd
-import joblib
+import pickle
+import yaml
 from sklearn.metrics import r2_score, mean_squared_error
 import json
-import yaml
+from sklearn.model_selection import train_test_split
+import argparse
+import os
 
-with open("params.yaml") as f:
+parser = argparse.ArgumentParser()
+parser.add_argument("--out_dir", required=True)
+args = parser.parse_args()
+
+os.makedirs(args.out_dir, exist_ok=True)
+
+# Load params
+with open("params.yml", "r") as f:
     params = yaml.safe_load(f)
 
-val = pd.read_csv("data/processed/val.csv")
-val.columns = val.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
-target = params["train"]["target_col"]
-X_val = val.drop(columns=[target])
-y_val = val[target]
+preprocess_params = params["preprocess"]
+paths = params["paths"]
 
-model = joblib.load(params["paths"]["model_out"])
-pred = model.predict(X_val)
+# Load data
+df = pd.read_csv("data/processed.csv")
+x = df.drop(columns=["y"])
+y = df["y"]
 
-metrics = {
-    "r2": r2_score(y_val, pred),
-    "mse": mean_squared_error(y_val, pred)
-}
-os.makedirs("metrics", exist_ok=True)
-with open(params["paths"]["metrics_out"], "w") as f:
-    json.dump(metrics, f, indent=2)
-print("wrote metrics:", metrics)
+# Split (same as train)
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y,
+    test_size=preprocess_params["test_size"],
+    random_state=preprocess_params["random_state"]
+)
+
+# Load model
+model = pickle.load(open(paths["model_out"], "rb"))
+
+# Evaluate
+r2 = model.score(x_test, y_test)
+mse = mean_squared_error(y_test, model.predict(x_test))
+metrics = {"r2": r2, "mse": mse}
+
+with open(paths["metrics_out"], "w") as f:
+    json.dump(metrics, f)
+
+print("Evaluation metrics:", metrics)

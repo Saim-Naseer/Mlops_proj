@@ -1,0 +1,87 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py --out_dir data --orig_data Admission_Predict.csv
+    deps:
+    - path: data/Admission_Predict.csv
+      hash: md5
+      md5: 0e02299c532bf81512a3015daaa6a8f0
+      size: 12502
+    - path: src/prepare.py
+      hash: md5
+      md5: 2ea865b825b6e798b0f55503dd1063eb
+      size: 1294
+    outs:
+    - path: data/Fast_Admission_Predict.csv
+      hash: md5
+      md5: 1ad824f5456e0acc2abf881a9bd1363f
+      size: 17339
+  preprocess:
+    cmd: python src/preprocess.py --out_dir models --input 
+      data/Fast_Admission_Predict.csv --output data/processed.csv
+    deps:
+    - path: data/Fast_Admission_Predict.csv
+      hash: md5
+      md5: 1ad824f5456e0acc2abf881a9bd1363f
+      size: 17339
+    - path: params.yml
+      hash: md5
+      md5: 30b86ecd3f36dbb8a0ef7a8160f14edf
+      size: 316
+    - path: src/preprocess.py
+      hash: md5
+      md5: 87abe40f7f8dad537fb61d4409590f73
+      size: 1580
+    outs:
+    - path: data/processed.csv
+      hash: md5
+      md5: b983ba678cfe9b733be0acef07a9abd4
+      size: 25636
+    - path: models/scaling_model.pkl
+      hash: md5
+      md5: 4766548e8f5d458669aec06e61785b87
+      size: 680
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed.csv
+      hash: md5
+      md5: b983ba678cfe9b733be0acef07a9abd4
+      size: 25636
+    - path: params.yml
+      hash: md5
+      md5: 30b86ecd3f36dbb8a0ef7a8160f14edf
+      size: 316
+    - path: src/train.py
+      hash: md5
+      md5: ba911776f77421c2f6673f0909ca0367
+      size: 2445
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: 56681f9e34d37b759c18d1dad74ed6a7
+      size: 632
+  evaluate:
+    cmd: python src/evaluate.py --out_dir metrics
+    deps:
+    - path: data/processed.csv
+      hash: md5
+      md5: b983ba678cfe9b733be0acef07a9abd4
+      size: 25636
+    - path: models/model.pkl
+      hash: md5
+      md5: 56681f9e34d37b759c18d1dad74ed6a7
+      size: 632
+    - path: params.yml
+      hash: md5
+      md5: 30b86ecd3f36dbb8a0ef7a8160f14edf
+      size: 316
+    - path: src/evaluate.py
+      hash: md5
+      md5: 6683b5231353540883e3169a460eab9f
+      size: 1080
+    outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: 38ec3abaac3be689cad4fc3ba935d112
+      size: 55

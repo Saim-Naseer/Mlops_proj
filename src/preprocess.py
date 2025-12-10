@@ -1,34 +1,58 @@
-# src/preprocess.py
+import argparse
 import pandas as pd
-import os
+import pickle
+from sklearn.preprocessing import StandardScaler
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 import yaml
-from sklearn.model_selection import train_test_split
+import os
 
-with open("params.yaml") as f:
-    params = yaml.safe_load(f)
+def load_params():
+    with open("params.yml", "r") as f:
+        return yaml.safe_load(f)
 
-raw = params["data"]["raw_path"]
-outdir = params["data"]["processed_dir"]
-os.makedirs(outdir, exist_ok=True)
+def preprocess(input_path, output_path, scaler_path):
+    
+    df = pd.read_csv(input_path)
+    
+    if "Serial No." in df.columns:
+        df.drop(columns=["Serial No."], inplace=True)
 
-df = pd.read_csv(raw)
+    x = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
 
-# normalize column names to safe names
-df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
+    scaler = StandardScaler()
+    x_scaled = scaler.fit_transform(x)
 
-# if column name contains trailing underscores etc, inspect and adjust
-# target column - try to normalize expected column names
-if "chance_of_admit" not in df.columns and "chance_of_admit_" in df.columns:
-    df = df.rename(columns={"chance_of_admit_":"chance_of_admit"})
+    pickle.dump(scaler, open(scaler_path, "wb"))
 
-# simple preprocessing: drop na's
-df = df.dropna()
+    vif_df = pd.DataFrame()
+    vif_df["VIF"] = [variance_inflation_factor(x_scaled, i)
+                     for i in range(x_scaled.shape[1])]
+    vif_df["Feature"] = x.columns
 
-# split
-test_size = params["train"]["test_size"]
-seed = params["train"]["random_seed"]
-train_df, val_df = train_test_split(df, test_size=test_size, random_state=seed)
+    print("VIF Values:")
+    print(vif_df)
 
-train_df.to_csv(os.path.join(outdir, "train.csv"), index=False)
-val_df.to_csv(os.path.join(outdir, "val.csv"), index=False)
-print("wrote processed files to", outdir)
+    processed_df = pd.DataFrame(x_scaled, columns=x.columns)
+    processed_df["y"] = y.values
+    processed_df.to_csv(output_path, index=False)
+
+    print(f"Processed full data saved to {output_path}")
+    print(f"Scaler saved to {scaler_path}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--out_dir", required=True)
+    args = parser.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    params = load_params()
+    preprocess(
+        input_path=args.input,
+        output_path=args.output,
+        scaler_path=params["preprocess"]["scaling_out"]
+    )

@@ -1,44 +1,35 @@
 stages:
-  # optional - only if you use a script to download via kaggle CLI
-  download:
-    cmd: python src/download_data.py
+  prepare:
+    cmd: python src/prepare.py --out_dir data --orig_data Admission_Predict.csv
     deps:
-      - src/download_data.py
+      - data/Admission_Predict.csv
+      - src/prepare.py
     outs:
-      - data/raw/Admission_Predict.csv
+      - data/Fast_Admission_Predict.csv
 
   preprocess:
-    cmd: python src/preprocess.py
+    cmd: python src/preprocess.py --out_dir models --input data/Fast_Admission_Predict.csv --output data/processed.csv
     deps:
       - src/preprocess.py
-      - params.yaml
-      - data/raw/Admission_Predict.csv
+      - data/Fast_Admission_Predict.csv
+      - params.yml
     outs:
-      - data/processed/train.csv
-      - data/processed/val.csv
-    params:
-      - train.test_size
-      - train.random_seed
-
+      - data/processed.csv
+      - models/scaling_model.pkl
   train:
     cmd: python src/train.py
     deps:
       - src/train.py
-      - params.yaml
-      - data/processed/train.csv
+      - data/processed.csv
+      - params.yml
     outs:
       - models/model.pkl
-    params:
-      - train.n_estimators
-      - train.max_depth
-      - train.threshold
-      - train.random_seed
-
   evaluate:
-    cmd: python src/evaluate.py
+    cmd: python src/evaluate.py --out_dir metrics
     deps:
       - src/evaluate.py
       - models/model.pkl
-      - data/processed/val.csv
-    metrics:
+      - data/processed.csv
+      - params.yml
+    outs:
       - metrics/metrics.json
